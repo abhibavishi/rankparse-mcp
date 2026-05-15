@@ -4,8 +4,8 @@ info:
   version: 1.0.0
   description: >
     SEO data API for developers and AI agents. Backlinks, domain authority, tech stack,
-    page metadata, and 22+ signals over REST and MCP. Billed per call — no subscription,
-    no monthly floor. Starting at $0.009/credit. Credits never expire.
+    real-time page audits, and 20+ signals — all powered by Common Crawl. Billed per call,
+    no subscription, no monthly floor. Starting at $0.009/credit. Credits never expire.
   contact:
     name: RankParse Support
     url: https://rankparse.com
@@ -309,39 +309,6 @@ components:
           type: integer
           minimum: 0
 
-    UrlIndexRow:
-      type: object
-      required: [url, status_code, mime, crawled_at]
-      properties:
-        url:
-          type: string
-        status_code:
-          type: integer
-        mime:
-          type: string
-        crawled_at:
-          type: string
-
-    PageMeta:
-      type: object
-      nullable: true
-      required: [url]
-      properties:
-        url:
-          type: string
-        title:
-          type: string
-          nullable: true
-        description:
-          type: string
-          nullable: true
-        h1:
-          type: string
-          nullable: true
-        canonical:
-          type: string
-          nullable: true
-
     TechStack:
       type: object
       properties:
@@ -355,35 +322,274 @@ components:
           type: string
           nullable: true
 
-    StatusCodeCount:
+    PageSeoTitle:
       type: object
-      required: [status_code, count]
       properties:
-        status_code:
-          type: integer
-        count:
-          type: integer
-          minimum: 1
-
-    ContentTypeCount:
-      type: object
-      required: [mime, count]
-      properties:
-        mime:
+        text:
           type: string
-        count:
+          nullable: true
+        length:
           type: integer
-          minimum: 1
+        optimal:
+          type: boolean
 
-    LanguageCount:
+    PageSeoDescription:
       type: object
-      required: [lang, page_count]
+      properties:
+        text:
+          type: string
+          nullable: true
+        length:
+          type: integer
+        optimal:
+          type: boolean
+
+    PageSeoCanonical:
+      type: object
+      properties:
+        url:
+          type: string
+          nullable: true
+        self_referential:
+          type: boolean
+
+    PageSeoRobots:
+      type: object
+      properties:
+        index:
+          type: boolean
+        follow:
+          type: boolean
+        raw:
+          type: string
+          nullable: true
+
+    PageSeoLanguage:
+      type: object
+      properties:
+        primary:
+          type: string
+          nullable: true
+        tag:
+          type: string
+          nullable: true
+        source:
+          type: string
+          nullable: true
+
+    PageSeoHreflang:
+      type: object
       properties:
         lang:
           type: string
-        page_count:
+        url:
+          type: string
+
+    PageSeoHeadings:
+      type: object
+      properties:
+        h1:
+          type: array
+          items:
+            type: string
+        h2:
+          type: array
+          items:
+            type: string
+        h3_count:
           type: integer
-          minimum: 1
+
+    PageSeoOg:
+      type: object
+      properties:
+        title:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        image:
+          type: string
+          nullable: true
+        type:
+          type: string
+          nullable: true
+        url:
+          type: string
+          nullable: true
+
+    PageSeoTwitter:
+      type: object
+      properties:
+        card:
+          type: string
+          nullable: true
+        title:
+          type: string
+          nullable: true
+
+    PageSeoImages:
+      type: object
+      properties:
+        total:
+          type: integer
+        missing_alt:
+          type: integer
+
+    PageSeoLinks:
+      type: object
+      properties:
+        internal:
+          type: integer
+        external:
+          type: integer
+
+    PageSeoData:
+      type: object
+      required: [url, status_code]
+      properties:
+        url:
+          type: string
+        final_url:
+          type: string
+        status_code:
+          type: integer
+        response_time_ms:
+          type: integer
+        title:
+          $ref: '#/components/schemas/PageSeoTitle'
+        description:
+          $ref: '#/components/schemas/PageSeoDescription'
+        canonical:
+          $ref: '#/components/schemas/PageSeoCanonical'
+        robots:
+          $ref: '#/components/schemas/PageSeoRobots'
+        viewport:
+          type: string
+          nullable: true
+        language:
+          $ref: '#/components/schemas/PageSeoLanguage'
+        hreflang:
+          type: array
+          items:
+            $ref: '#/components/schemas/PageSeoHreflang'
+        headings:
+          $ref: '#/components/schemas/PageSeoHeadings'
+        og:
+          $ref: '#/components/schemas/PageSeoOg'
+        twitter:
+          $ref: '#/components/schemas/PageSeoTwitter'
+        json_ld:
+          type: array
+          items:
+            type: object
+        images:
+          $ref: '#/components/schemas/PageSeoImages'
+        links:
+          $ref: '#/components/schemas/PageSeoLinks'
+        word_count:
+          type: integer
+        favicon:
+          type: string
+          nullable: true
+
+    SiteHealthHttps:
+      type: object
+      properties:
+        enforced:
+          type: boolean
+        hsts:
+          type: boolean
+        hsts_max_age:
+          type: integer
+          nullable: true
+
+    SiteHealthWwwRedirect:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        target:
+          type: string
+          nullable: true
+
+    SiteHealthCheck:
+      type: object
+      properties:
+        url:
+          type: string
+        status:
+          type: integer
+          nullable: true
+        content_type:
+          type: string
+          nullable: true
+        response_time_ms:
+          type: integer
+          nullable: true
+
+    SiteHealthSecurityHeaders:
+      type: object
+      properties:
+        x_frame_options:
+          type: string
+          nullable: true
+        x_content_type_options:
+          type: string
+          nullable: true
+        content_security_policy:
+          type: boolean
+        strict_transport_security:
+          type: string
+          nullable: true
+        referrer_policy:
+          type: string
+          nullable: true
+
+    SiteHealthRobotsTxt:
+      type: object
+      properties:
+        present:
+          type: boolean
+        disallow_all:
+          type: boolean
+        sitemap_declared:
+          type: boolean
+
+    SiteHealthData:
+      type: object
+      required: [domain, https, www_redirect, checks, security_headers, robots_txt]
+      properties:
+        domain:
+          type: string
+        https:
+          $ref: '#/components/schemas/SiteHealthHttps'
+        www_redirect:
+          $ref: '#/components/schemas/SiteHealthWwwRedirect'
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/SiteHealthCheck'
+        security_headers:
+          $ref: '#/components/schemas/SiteHealthSecurityHeaders'
+        robots_txt:
+          $ref: '#/components/schemas/SiteHealthRobotsTxt'
+
+    SitemapEntry:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+        lastmod:
+          type: string
+          nullable: true
+        changefreq:
+          type: string
+          nullable: true
+        priority:
+          type: string
+          nullable: true
 
     DomainOverlapRow:
       type: object
@@ -577,6 +783,72 @@ components:
         error:
           type: string
 
+    PagePerformanceCategory:
+      type: object
+      properties:
+        score:
+          type: number
+          minimum: 0
+          maximum: 1
+          nullable: true
+        display_value:
+          type: string
+
+    PagePerformanceMetric:
+      type: object
+      properties:
+        value:
+          type: number
+        display_value:
+          type: string
+        score:
+          type: number
+          nullable: true
+
+    PagePerformanceData:
+      type: object
+      properties:
+        url:
+          type: string
+        strategy:
+          type: string
+          enum: [mobile, desktop]
+        performance_score:
+          type: number
+          minimum: 0
+          maximum: 1
+          nullable: true
+        accessibility_score:
+          type: number
+          minimum: 0
+          maximum: 1
+          nullable: true
+        seo_score:
+          type: number
+          minimum: 0
+          maximum: 1
+          nullable: true
+        best_practices_score:
+          type: number
+          minimum: 0
+          maximum: 1
+          nullable: true
+        metrics:
+          type: object
+          properties:
+            first_contentful_paint:
+              $ref: '#/components/schemas/PagePerformanceMetric'
+            largest_contentful_paint:
+              $ref: '#/components/schemas/PagePerformanceMetric'
+            total_blocking_time:
+              $ref: '#/components/schemas/PagePerformanceMetric'
+            cumulative_layout_shift:
+              $ref: '#/components/schemas/PagePerformanceMetric'
+            speed_index:
+              $ref: '#/components/schemas/PagePerformanceMetric'
+            time_to_interactive:
+              $ref: '#/components/schemas/PagePerformanceMetric'
+
     StubData:
       type: object
       required: [status, reason]
@@ -717,8 +989,8 @@ paths:
       operationId: getBacklinks
       summary: Get backlinks for a domain
       description: >
-        Returns backlinks for the specified domain.
-        Default `sort=importance` returns aggregated referrer rows.
+        Returns backlinks pointing to the specified domain from Common Crawl data.
+        Default `sort=importance` returns aggregated referrer rows ordered by domain authority.
         `sort=recent` returns URL-level backlink rows ordered by crawl recency.
         Costs 2 credits (or 3 credits with `score=true`).
       tags: [Link Graph]
@@ -757,7 +1029,7 @@ paths:
     get:
       operationId: getReferringDomains
       summary: Get referring domains
-      description: Returns domains that link to the specified domain with link counts. Costs 2 credits (or 3 credits with score=true).
+      description: Returns domains that link to the specified domain with dofollow/nofollow link counts. Costs 2 credits (or 3 credits with score=true).
       tags: [Link Graph]
       parameters:
         - $ref: '#/components/parameters/domain'
@@ -791,7 +1063,7 @@ paths:
     get:
       operationId: getOutboundLinks
       summary: Get outbound links from a domain
-      description: Returns links going out from the specified domain. Costs 2 credits.
+      description: Returns external links going out from the specified domain with anchor text and link type. Costs 2 credits.
       tags: [Link Graph]
       parameters:
         - $ref: '#/components/parameters/domain'
@@ -826,7 +1098,7 @@ paths:
     get:
       operationId: getAnchorText
       summary: Get anchor text distribution
-      description: Returns anchor text phrases used in links pointing to the domain. Costs 2 credits.
+      description: Returns anchor text phrases used in links pointing to the domain, with link and domain counts. Costs 2 credits.
       tags: [Link Graph]
       parameters:
         - $ref: '#/components/parameters/domain'
@@ -888,47 +1160,13 @@ paths:
         '429':
           $ref: '#/components/responses/RateLimited'
 
-  /v1/url-index:
-    get:
-      operationId: getUrlIndex
-      summary: Get URL index (CDX)
-      description: >
-        Returns crawled URLs for a domain with status codes and MIME types. Costs 2 credits.
-        Note: upstream R2 SQL pagination currently does not support true OFFSET behavior for this query.
-      tags: [URL Index]
-      parameters:
-        - $ref: '#/components/parameters/domain'
-        - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/offset'
-      responses:
-        '200':
-          description: URL index entries
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/EnvelopeFields'
-                  - type: object
-                    required: [data]
-                    properties:
-                      data:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/UrlIndexRow'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '402':
-          $ref: '#/components/responses/PaymentRequired'
-        '429':
-          $ref: '#/components/responses/RateLimited'
-
   /v1/domain-authority:
     get:
       operationId: getDomainAuthority
       summary: Get domain authority score
-      description: Returns a 0-100 authority score based on referring domains. Costs 1 credit.
+      description: >
+        Returns a 0-100 authority score based on referring domains, enriched with RDAP registration data
+        and Tranco popularity rank. Costs 1 credit.
       tags: [Domain Metrics]
       parameters:
         - $ref: '#/components/parameters/domain'
@@ -958,7 +1196,7 @@ paths:
     get:
       operationId: getDomainRank
       summary: Get domain rank metrics
-      description: Returns inbound edge count, unique linking domains, and average host count. Costs 2 credits.
+      description: Returns inbound edge count, unique linking domains, and average linking host count. Costs 2 credits.
       tags: [Domain Metrics]
       parameters:
         - $ref: '#/components/parameters/domain'
@@ -988,8 +1226,8 @@ paths:
     get:
       operationId: getCrawlHistory
       summary: Get crawl history for a domain
-      description: Returns first/last seen dates and total URL count from the crawl index. Costs 2 credits.
-      tags: [URL Index]
+      description: Returns first seen date, last seen date, and total URL count from the Common Crawl index. Costs 2 credits.
+      tags: [Domain Metrics]
       parameters:
         - $ref: '#/components/parameters/domain'
       responses:
@@ -1014,49 +1252,14 @@ paths:
         '429':
           $ref: '#/components/responses/RateLimited'
 
-  /v1/page-meta:
-    get:
-      operationId: getPageMeta
-      summary: Get page metadata
-      description: >
-        Returns title, description, h1, and canonical URL for a specific page.
-        Returns null data (not 404) when the URL is not found. Costs 2 credits.
-      tags: [Page Metadata]
-      parameters:
-        - name: url
-          in: query
-          required: true
-          schema:
-            type: string
-          description: The full URL to look up (e.g. "https://example.com/page")
-      responses:
-        '200':
-          description: Page metadata (data may be null if URL not found)
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/EnvelopeFields'
-                  - type: object
-                    required: [data]
-                    properties:
-                      data:
-                        $ref: '#/components/schemas/PageMeta'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '402':
-          $ref: '#/components/responses/PaymentRequired'
-        '429':
-          $ref: '#/components/responses/RateLimited'
-
   /v1/tech-stack:
     get:
       operationId: getTechStack
       summary: Get detected tech stack
-      description: Returns server, X-Powered-By, and generator meta tag for a domain. Costs 2 credits.
-      tags: [Page Metadata]
+      description: >
+        Fetches the domain in real time and returns detected server software, CMS, and framework
+        signals from HTTP headers and meta tags. Costs 2 credits.
+      tags: [Page Analysis]
       parameters:
         - $ref: '#/components/parameters/domain'
       responses:
@@ -1081,17 +1284,25 @@ paths:
         '429':
           $ref: '#/components/responses/RateLimited'
 
-  /v1/status-codes:
+  /v1/page-seo:
     get:
-      operationId: getStatusCodes
-      summary: Get HTTP status code distribution
-      description: Returns a count of URLs by HTTP status code for the domain. Costs 2 credits.
-      tags: [URL Index]
+      operationId: getPageSeo
+      summary: Full SEO audit for a URL
+      description: >
+        Fetches the target URL in real time and returns a complete SEO audit including meta tags,
+        Open Graph, JSON-LD structured data, hreflang, headings, image alt coverage, internal/external
+        links, word count, and more. Returns 503 if the URL is unreachable. Costs 3 credits.
+      tags: [Page Analysis]
       parameters:
-        - $ref: '#/components/parameters/domain'
+        - name: url
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The full URL to analyze (e.g. "https://example.com/about")
       responses:
         '200':
-          description: Status code counts
+          description: Page SEO audit
           content:
             application/json:
               schema:
@@ -1101,9 +1312,45 @@ paths:
                     required: [data]
                     properties:
                       data:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/StatusCodeCount'
+                        $ref: '#/components/schemas/PageSeoData'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          description: Target URL unreachable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/site-health:
+    get:
+      operationId: getSiteHealth
+      summary: Real-time site health check
+      description: >
+        Probes key URLs in real time to check HTTPS enforcement, HSTS, www redirect, security headers,
+        robots.txt presence, and sitemap availability. Costs 2 credits.
+      tags: [Page Analysis]
+      parameters:
+        - $ref: '#/components/parameters/domain'
+      responses:
+        '200':
+          description: Site health report
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EnvelopeFields'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SiteHealthData'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -1113,29 +1360,49 @@ paths:
         '429':
           $ref: '#/components/responses/RateLimited'
 
-  /v1/content-types:
+  /v1/sitemap:
     get:
-      operationId: getContentTypes
-      summary: Get content type distribution
-      description: Returns a count of URLs by MIME type for the domain. Costs 2 credits.
-      tags: [URL Index]
+      operationId: getSitemap
+      summary: Discover and parse a domain's sitemap
+      description: >
+        Discovers a domain's sitemap via robots.txt, then parses and returns the URL inventory
+        with lastmod, changefreq, and priority. For sitemap indexes, up to 5 child sitemaps
+        are fetched in parallel. Returns empty data (not an error) when no sitemap is found.
+        The legacy `/v1/url-index` route redirects here (301). Costs 2 credits.
+      tags: [Page Analysis]
       parameters:
         - $ref: '#/components/parameters/domain'
+        - $ref: '#/components/parameters/limit'
       responses:
         '200':
-          description: Content type counts
+          description: Sitemap URL inventory
           content:
             application/json:
               schema:
                 allOf:
                   - $ref: '#/components/schemas/EnvelopeFields'
                   - type: object
-                    required: [data]
+                    required: [data, total, sitemap_url, sitemap_type, child_sitemaps, source]
                     properties:
                       data:
                         type: array
                         items:
-                          $ref: '#/components/schemas/ContentTypeCount'
+                          $ref: '#/components/schemas/SitemapEntry'
+                      total:
+                        type: integer
+                        minimum: 0
+                      sitemap_url:
+                        type: string
+                        nullable: true
+                      sitemap_type:
+                        type: string
+                        enum: [sitemap, index, none]
+                      child_sitemaps:
+                        type: array
+                        items:
+                          type: string
+                      source:
+                        type: string
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -1145,17 +1412,34 @@ paths:
         '429':
           $ref: '#/components/responses/RateLimited'
 
-  /v1/language:
+  /v1/page-performance:
     get:
-      operationId: getLanguage
-      summary: Get language distribution
-      description: Returns page count by detected language for the domain (max 5 results). Costs 2 credits.
-      tags: [Page Metadata]
+      operationId: getPagePerformance
+      summary: Page performance and Core Web Vitals
+      description: >
+        Runs a Google PageSpeed Insights analysis and returns Lighthouse scores plus Core Web Vitals
+        (LCP, CLS, TBT, FCP, Speed Index, TTI). Results are cached for 24 hours.
+        Subject to a global cap of 25,000 calls/day and 50 calls/day per user.
+        Costs 3 credits (deducted only on successful PSI response).
+      tags: [Page Analysis]
       parameters:
-        - $ref: '#/components/parameters/domain'
+        - name: url
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The full URL to analyze
+        - name: strategy
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [mobile, desktop]
+            default: mobile
+          description: Device strategy (default mobile)
       responses:
         '200':
-          description: Language distribution
+          description: Performance scores and Core Web Vitals
           content:
             application/json:
               schema:
@@ -1165,10 +1449,7 @@ paths:
                     required: [data]
                     properties:
                       data:
-                        type: array
-                        maxItems: 5
-                        items:
-                          $ref: '#/components/schemas/LanguageCount'
+                        $ref: '#/components/schemas/PagePerformanceData'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -1176,7 +1457,22 @@ paths:
         '402':
           $ref: '#/components/responses/PaymentRequired'
         '429':
-          $ref: '#/components/responses/RateLimited'
+          description: Daily quota reached (global or per-user)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Error'
+                  - type: object
+                    properties:
+                      retry_after:
+                        type: string
+        '503':
+          description: PageSpeed Insights API unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /v1/domain-overlap:
     get:
@@ -1217,7 +1513,7 @@ paths:
     get:
       operationId: getLinkIntersect
       summary: Find domains linking to both targets
-      description: Returns domains that link to both domain_a and domain_b. Costs 5 credits.
+      description: Returns domains that link to both domain_a and domain_b. Useful for finding shared link sources. Costs 5 credits.
       tags: [Cross-Domain]
       parameters:
         - name: domain_a
@@ -1262,7 +1558,8 @@ paths:
       operationId: getCompetitorGap
       summary: Find competitor link gaps
       description: >
-        Returns domains that link to the competitor (vs) but not to the target domain.
+        Returns domains that link to the competitor (`vs`) but not to the target domain.
+        Use this to discover link-building opportunities where competitors have coverage you don't.
         Costs 5 credits.
       tags: [Cross-Domain]
       parameters:
@@ -1324,39 +1621,13 @@ paths:
         '429':
           $ref: '#/components/responses/RateLimited'
 
-  /v1/link-audit:
-    get:
-      operationId: getLinkAudit
-      summary: Run link profile audit
-      description: >
-        Returns composite backlink quality, anchor profile, risk flags, and outbound concentration signals.
-        Costs 8 credits.
-      tags: [Power Endpoints]
-      parameters:
-        - $ref: '#/components/parameters/domain'
-      responses:
-        '200':
-          description: Link audit report
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LinkAudit'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '402':
-          $ref: '#/components/responses/PaymentRequired'
-        '429':
-          $ref: '#/components/responses/RateLimited'
-
   /v1/similar-domains:
     get:
       operationId: getSimilarDomains
       summary: Find similar domains
       description: >
-        Returns domains that share linking domains with the target.
-        Limit is capped at 100 (not 1000). Costs 5 credits.
+        Returns domains that share linking domains with the target — a signal of topical proximity.
+        Limit is capped at 100. Costs 5 credits.
       tags: [Cross-Domain]
       parameters:
         - $ref: '#/components/parameters/domain'
@@ -1393,12 +1664,38 @@ paths:
         '429':
           $ref: '#/components/responses/RateLimited'
 
+  /v1/link-audit:
+    get:
+      operationId: getLinkAudit
+      summary: Run link profile audit
+      description: >
+        Returns a composite backlink quality score, anchor text profile, risk flags, and outbound
+        link concentration signals in a single request. Costs 8 credits.
+      tags: [Power Endpoints]
+      parameters:
+        - $ref: '#/components/parameters/domain'
+      responses:
+        '200':
+          description: Link audit report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinkAudit'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
   /v1/site-explorer:
     get:
       operationId: getSiteExplorer
       summary: Full site overview
       description: >
-        Returns backlinks, authority score, top pages, and anchor text in a single request.
+        Returns backlinks, authority score, top pages, and anchor text distribution in a single request.
         Costs 10 credits.
       tags: [Power Endpoints]
       parameters:
@@ -1486,7 +1783,6 @@ paths:
           required: false
           schema:
             type: string
-          description: Domain (optional for stub endpoints)
       responses:
         '200':
           description: Stub response
@@ -1502,8 +1798,6 @@ paths:
                         $ref: '#/components/schemas/StubData'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        '429':
-          $ref: '#/components/responses/RateLimited'
 
   /v1/new-links:
     get:
@@ -1519,7 +1813,6 @@ paths:
           required: false
           schema:
             type: string
-          description: Domain (optional for stub endpoints)
       responses:
         '200':
           description: Stub response
@@ -1535,8 +1828,6 @@ paths:
                         $ref: '#/components/schemas/StubData'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        '429':
-          $ref: '#/components/responses/RateLimited'
 
   /v1/lost-links:
     get:
@@ -1552,7 +1843,6 @@ paths:
           required: false
           schema:
             type: string
-          description: Domain (optional for stub endpoints)
       responses:
         '200':
           description: Stub response
@@ -1568,70 +1858,3 @@ paths:
                         $ref: '#/components/schemas/StubData'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        '429':
-          $ref: '#/components/responses/RateLimited'
-
-  /v1/schema-markup:
-    get:
-      operationId: getSchemaMarkup
-      summary: Schema markup (stub)
-      description: >
-        Not yet available in v1. Returns immediately with status "not_yet_available". Costs 0 credits.
-      tags: [Stubs]
-      parameters:
-        - name: url
-          in: query
-          required: true
-          schema:
-            type: string
-          description: The URL to check for schema markup
-      responses:
-        '200':
-          description: Stub response
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/EnvelopeFields'
-                  - type: object
-                    required: [data]
-                    properties:
-                      data:
-                        $ref: '#/components/schemas/StubData'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '429':
-          $ref: '#/components/responses/RateLimited'
-
-  /v1/internal-links:
-    get:
-      operationId: getInternalLinks
-      summary: Internal links (stub)
-      description: >
-        Not yet available in v1. Returns immediately with status "not_yet_available". Costs 0 credits.
-      tags: [Stubs]
-      parameters:
-        - $ref: '#/components/parameters/domain'
-        - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/offset'
-      responses:
-        '200':
-          description: Stub response
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/EnvelopeFields'
-                  - type: object
-                    required: [data]
-                    properties:
-                      data:
-                        $ref: '#/components/schemas/StubData'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '429':
-          $ref: '#/components/responses/RateLimited'

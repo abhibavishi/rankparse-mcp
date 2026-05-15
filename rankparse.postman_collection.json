@@ -1,0 +1,444 @@
+{
+  "info": {
+    "name": "RankParse API",
+    "description": "SEO data API powered by Common Crawl — backlinks, domain authority, tech stack, real-time page audits, and 20+ signals. Set the `apiKey` collection variable to your `rp_...` key before running.\n\nBase URL: https://api.rankparse.com\nDocs: https://rankparse.com/docs\nCredits: https://rankparse.com/pricing",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      { "key": "key", "value": "X-API-Key", "type": "string" },
+      { "key": "value", "value": "{{apiKey}}", "type": "string" },
+      { "key": "in", "value": "header", "type": "string" }
+    ]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "https://api.rankparse.com", "type": "string" },
+    { "key": "apiKey", "value": "rp_your_key_here", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "Ping",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/ping", "host": ["{{baseUrl}}"], "path": ["ping"] },
+            "description": "Fast liveness check. No authentication required."
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] },
+            "description": "Returns the health status of all subsystems (D1, R2, R2 SQL)."
+          }
+        },
+        {
+          "name": "Check Credit Balance",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/v1/credits", "host": ["{{baseUrl}}"], "path": ["v1", "credits"] },
+            "description": "Returns the current credit balance. Does not deduct credits."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Link Graph",
+      "item": [
+        {
+          "name": "Backlinks",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/backlinks?domain=example.com&limit=100&sort=importance",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "backlinks"],
+              "query": [
+                { "key": "domain", "value": "example.com", "description": "Target domain (required)" },
+                { "key": "limit", "value": "100", "description": "Max results (default 100, max 1000)" },
+                { "key": "sort", "value": "importance", "description": "importance or recent" },
+                { "key": "from_domain", "value": "", "description": "Filter by source domain", "disabled": true },
+                { "key": "link_type", "value": "", "description": "Filter by link type", "disabled": true },
+                { "key": "score", "value": "false", "description": "Add domain score enrichment (+1 credit)", "disabled": true }
+              ]
+            },
+            "description": "Returns backlinks pointing to a domain. Costs 2 credits."
+          }
+        },
+        {
+          "name": "Referring Domains",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/referring-domains?domain=example.com&limit=100",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "referring-domains"],
+              "query": [
+                { "key": "domain", "value": "example.com" },
+                { "key": "limit", "value": "100" },
+                { "key": "score", "value": "false", "disabled": true }
+              ]
+            },
+            "description": "Domains linking to the target with dofollow/nofollow counts. Costs 2 credits."
+          }
+        },
+        {
+          "name": "Outbound Links",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/outbound-links?domain=example.com&limit=100",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "outbound-links"],
+              "query": [
+                { "key": "domain", "value": "example.com" },
+                { "key": "limit", "value": "100" }
+              ]
+            },
+            "description": "External links going out from a domain. Costs 2 credits."
+          }
+        },
+        {
+          "name": "Anchor Text",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/anchor-text?domain=example.com&limit=100",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "anchor-text"],
+              "query": [
+                { "key": "domain", "value": "example.com" },
+                { "key": "limit", "value": "100" }
+              ]
+            },
+            "description": "Anchor text distribution for inbound links. Costs 2 credits."
+          }
+        },
+        {
+          "name": "Top Pages",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/top-pages?domain=example.com&limit=100",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "top-pages"],
+              "query": [
+                { "key": "domain", "value": "example.com" },
+                { "key": "limit", "value": "100" }
+              ]
+            },
+            "description": "Pages ranked by number of inbound links. Costs 2 credits."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Domain Metrics",
+      "item": [
+        {
+          "name": "Domain Authority",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/domain-authority?domain=example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "domain-authority"],
+              "query": [
+                { "key": "domain", "value": "example.com" }
+              ]
+            },
+            "description": "0-100 authority score + RDAP registration data + Tranco rank. Costs 1 credit."
+          }
+        },
+        {
+          "name": "Domain Rank",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/domain-rank?domain=example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "domain-rank"],
+              "query": [
+                { "key": "domain", "value": "example.com" }
+              ]
+            },
+            "description": "Inbound edge count, unique linking domains, avg host count. Costs 2 credits."
+          }
+        },
+        {
+          "name": "Crawl History",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/crawl-history?domain=example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "crawl-history"],
+              "query": [
+                { "key": "domain", "value": "example.com" }
+              ]
+            },
+            "description": "First/last seen dates and total URL count from Common Crawl. Costs 2 credits."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Page Analysis",
+      "item": [
+        {
+          "name": "Page SEO Audit",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/page-seo?url=https://example.com/about",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "page-seo"],
+              "query": [
+                { "key": "url", "value": "https://example.com/about", "description": "Full URL to audit (required)" }
+              ]
+            },
+            "description": "Real-time full SEO audit — meta tags, OG, JSON-LD, hreflang, headings, images, links. Costs 3 credits."
+          }
+        },
+        {
+          "name": "Site Health",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/site-health?domain=example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "site-health"],
+              "query": [
+                { "key": "domain", "value": "example.com" }
+              ]
+            },
+            "description": "Real-time check: HTTPS enforcement, security headers, robots.txt, sitemap availability. Costs 2 credits."
+          }
+        },
+        {
+          "name": "Sitemap",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/sitemap?domain=example.com&limit=100",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "sitemap"],
+              "query": [
+                { "key": "domain", "value": "example.com" },
+                { "key": "limit", "value": "100" }
+              ]
+            },
+            "description": "Discover and parse a domain's sitemap. Returns URLs with lastmod/changefreq/priority. Costs 2 credits."
+          }
+        },
+        {
+          "name": "Tech Stack",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/tech-stack?domain=example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "tech-stack"],
+              "query": [
+                { "key": "domain", "value": "example.com" }
+              ]
+            },
+            "description": "Real-time tech stack detection from HTTP headers and meta tags. Costs 2 credits."
+          }
+        },
+        {
+          "name": "Page Performance (Core Web Vitals)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/page-performance?url=https://example.com&strategy=mobile",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "page-performance"],
+              "query": [
+                { "key": "url", "value": "https://example.com", "description": "Full URL (required)" },
+                { "key": "strategy", "value": "mobile", "description": "mobile or desktop" }
+              ]
+            },
+            "description": "Google PageSpeed Insights — Lighthouse scores + Core Web Vitals (LCP, CLS, TBT, FCP). Results cached 24h. Costs 3 credits."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cross-Domain",
+      "item": [
+        {
+          "name": "Domain Overlap",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/domain-overlap?domains=ahrefs.com,moz.com&limit=100",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "domain-overlap"],
+              "query": [
+                { "key": "domains", "value": "ahrefs.com,moz.com", "description": "Comma-separated domains (min 2, max 5)" },
+                { "key": "limit", "value": "100" }
+              ]
+            },
+            "description": "Domains linking to 2+ of the specified targets. Costs 5 credits."
+          }
+        },
+        {
+          "name": "Link Intersect",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/link-intersect?domain_a=ahrefs.com&domain_b=moz.com&limit=100",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "link-intersect"],
+              "query": [
+                { "key": "domain_a", "value": "ahrefs.com" },
+                { "key": "domain_b", "value": "moz.com" },
+                { "key": "limit", "value": "100" }
+              ]
+            },
+            "description": "Domains linking to both targets. Costs 5 credits."
+          }
+        },
+        {
+          "name": "Competitor Gap",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/competitor-gap?domain=moz.com&vs=ahrefs.com&limit=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "competitor-gap"],
+              "query": [
+                { "key": "domain", "value": "moz.com", "description": "Your domain" },
+                { "key": "vs", "value": "ahrefs.com", "description": "Competitor domain" },
+                { "key": "limit", "value": "50" }
+              ]
+            },
+            "description": "Domains linking to competitor but not to target — link-building opportunities. Costs 5 credits."
+          }
+        },
+        {
+          "name": "Similar Domains",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/similar-domains?domain=example.com&limit=100",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "similar-domains"],
+              "query": [
+                { "key": "domain", "value": "example.com" },
+                { "key": "limit", "value": "100" }
+              ]
+            },
+            "description": "Domains sharing link sources — topical proximity signal. Costs 5 credits."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Power Endpoints",
+      "item": [
+        {
+          "name": "Link Audit",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/link-audit?domain=example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "link-audit"],
+              "query": [
+                { "key": "domain", "value": "example.com" }
+              ]
+            },
+            "description": "Composite backlink quality score, anchor profile, risk flags, outbound concentration. Costs 8 credits."
+          }
+        },
+        {
+          "name": "Site Explorer",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/site-explorer?domain=example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "site-explorer"],
+              "query": [
+                { "key": "domain", "value": "example.com" }
+              ]
+            },
+            "description": "Backlinks + authority + top pages + anchor text in one request. Costs 10 credits."
+          }
+        },
+        {
+          "name": "Batch Backlinks",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/batch",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "batch"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"domains\": [\"example.com\", \"anothersite.com\", \"third.com\"]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Backlinks for up to 50 domains in one call. Costs 2 credits per successful domain."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Stubs (v2)",
+      "item": [
+        {
+          "name": "Link Velocity",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/link-velocity?domain=example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "link-velocity"],
+              "query": [{ "key": "domain", "value": "example.com" }]
+            },
+            "description": "Not yet available — returns not_yet_available. Free."
+          }
+        },
+        {
+          "name": "New Links",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/new-links?domain=example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "new-links"],
+              "query": [{ "key": "domain", "value": "example.com" }]
+            },
+            "description": "Not yet available — returns not_yet_available. Free."
+          }
+        },
+        {
+          "name": "Lost Links",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/lost-links?domain=example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "lost-links"],
+              "query": [{ "key": "domain", "value": "example.com" }]
+            },
+            "description": "Not yet available — returns not_yet_available. Free."
+          }
+        }
+      ]
+    }
+  ]
+}
