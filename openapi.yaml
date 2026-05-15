@@ -1,0 +1,1637 @@
+openapi: 3.0.3
+info:
+  title: RankParse API
+  version: 1.0.0
+  description: >
+    SEO data API for developers and AI agents. Backlinks, domain authority, tech stack,
+    page metadata, and 22+ signals over REST and MCP. Billed per call — no subscription,
+    no monthly floor. Starting at $0.009/credit. Credits never expire.
+  contact:
+    name: RankParse Support
+    url: https://rankparse.com
+  license:
+    name: Proprietary
+    url: https://rankparse.com/terms
+
+servers:
+  - url: https://api.rankparse.com
+    description: Production
+
+security:
+  - ApiKeyAuth: []
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  parameters:
+    domain:
+      name: domain
+      in: query
+      required: true
+      schema:
+        type: string
+      description: The domain to query (e.g. "example.com")
+    limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 100
+        minimum: 1
+        maximum: 1000
+      description: Maximum number of results to return (default 100, max 1000)
+    offset:
+      name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+        minimum: 0
+      description: Number of results to skip for pagination
+    score:
+      name: score
+      in: query
+      required: false
+      schema:
+        type: boolean
+        default: false
+      description: Enable derived score enrichment on each row (adds extra credit cost)
+    backlinksSort:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [importance, recent]
+        default: importance
+      description: >
+        Backlink ranking mode. `importance` (default) returns aggregated referrer rows;
+        `recent` returns freshest URL-level backlinks.
+    backlinksFromDomain:
+      name: from_domain
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Optional source-domain filter (exact domain).
+    backlinksLinkType:
+      name: link_type
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Optional link type filter, e.g. `hyperlink` or `image`.
+    domainsCsv:
+      name: domains
+      in: query
+      required: true
+      schema:
+        type: string
+      description: Comma-separated domains. Minimum 2, maximum 5.
+
+  schemas:
+    Error:
+      type: object
+      required: [error, code, message]
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+        message:
+          type: string
+
+    EnvelopeFields:
+      type: object
+      required: [credits_used, credits_remaining]
+      properties:
+        domain:
+          type: string
+        url:
+          type: string
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+        credits_used:
+          type: integer
+          minimum: 0
+        credits_remaining:
+          type: integer
+          minimum: 0
+
+    BacklinkRow:
+      type: object
+      required: [from_domain, from_url, to_url, link_type, crawled_at]
+      properties:
+        from_domain:
+          type: string
+        from_url:
+          type: string
+        to_url:
+          type: string
+        anchor_text:
+          type: string
+          nullable: true
+        rel:
+          type: string
+          nullable: true
+        link_type:
+          type: string
+        domain_host_count:
+          type: number
+          minimum: 0
+          nullable: true
+        crawled_at:
+          type: string
+        from_domain_score:
+          type: integer
+          minimum: 0
+          maximum: 100
+        anchor_type:
+          type: string
+          enum: [branded, partial, naked, generic, image]
+        link_quality:
+          type: string
+          enum: [high, medium, low]
+
+    ReferringDomainRow:
+      type: object
+      required: [from_domain, dofollow_links, nofollow_links, total_links]
+      properties:
+        from_domain:
+          type: string
+        dofollow_links:
+          type: integer
+          minimum: 0
+        nofollow_links:
+          type: integer
+          minimum: 0
+        total_links:
+          type: integer
+          minimum: 0
+        from_domain_score:
+          type: integer
+          minimum: 0
+          maximum: 100
+
+    OutboundLinkRow:
+      type: object
+      required: [to_domain, to_url, link_type, edge_count]
+      properties:
+        to_domain:
+          type: string
+        to_url:
+          type: string
+        anchor_text:
+          type: string
+          nullable: true
+        link_type:
+          type: string
+        edge_count:
+          type: integer
+          minimum: 1
+
+    OutboundSummary:
+      type: object
+      required: [unique_destinations, top_domain, top_domain_concentration]
+      properties:
+        unique_destinations:
+          type: integer
+          minimum: 0
+        top_domain:
+          type: string
+          nullable: true
+        top_domain_concentration:
+          type: number
+          minimum: 0
+          maximum: 1
+
+    AnchorTextRow:
+      type: object
+      required: [anchor_text, link_count, domain_count]
+      properties:
+        anchor_text:
+          type: string
+        link_count:
+          type: integer
+          minimum: 1
+        domain_count:
+          type: integer
+          minimum: 1
+
+    TopPageRow:
+      type: object
+      required: [url, inbound_links, referring_domains]
+      properties:
+        url:
+          type: string
+        inbound_links:
+          type: integer
+          minimum: 1
+        referring_domains:
+          type: integer
+          minimum: 1
+        status_code:
+          type: integer
+          nullable: true
+        mime:
+          type: string
+          nullable: true
+
+    DomainAuthority:
+      type: object
+      required: [score, referring_domains, total_host_count, registered_at, registrar, popularity_rank, health_score, risk_flags]
+      properties:
+        score:
+          type: integer
+          minimum: 0
+          maximum: 100
+        referring_domains:
+          type: integer
+          minimum: 0
+        total_host_count:
+          type: number
+          minimum: 0
+        registered_at:
+          type: string
+          nullable: true
+        registrar:
+          type: string
+          nullable: true
+        popularity_rank:
+          type: integer
+          minimum: 1
+          nullable: true
+        health_score:
+          type: integer
+          minimum: 0
+          maximum: 100
+        risk_flags:
+          type: array
+          items:
+            type: string
+            enum: [new_domain, high_authority_new_domain, no_tranco_presence, low_authority]
+
+    DomainRank:
+      type: object
+      required: [inbound_edges, unique_domains, avg_linking_host_count]
+      properties:
+        inbound_edges:
+          type: integer
+          minimum: 0
+        unique_domains:
+          type: integer
+          minimum: 0
+        avg_linking_host_count:
+          type: number
+          minimum: 0
+
+    CrawlHistory:
+      type: object
+      required: [total_urls]
+      properties:
+        first_seen:
+          type: string
+          nullable: true
+        last_seen:
+          type: string
+          nullable: true
+        total_urls:
+          type: integer
+          minimum: 0
+
+    UrlIndexRow:
+      type: object
+      required: [url, status_code, mime, crawled_at]
+      properties:
+        url:
+          type: string
+        status_code:
+          type: integer
+        mime:
+          type: string
+        crawled_at:
+          type: string
+
+    PageMeta:
+      type: object
+      nullable: true
+      required: [url]
+      properties:
+        url:
+          type: string
+        title:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        h1:
+          type: string
+          nullable: true
+        canonical:
+          type: string
+          nullable: true
+
+    TechStack:
+      type: object
+      properties:
+        server:
+          type: string
+          nullable: true
+        x_powered_by:
+          type: string
+          nullable: true
+        generator:
+          type: string
+          nullable: true
+
+    StatusCodeCount:
+      type: object
+      required: [status_code, count]
+      properties:
+        status_code:
+          type: integer
+        count:
+          type: integer
+          minimum: 1
+
+    ContentTypeCount:
+      type: object
+      required: [mime, count]
+      properties:
+        mime:
+          type: string
+        count:
+          type: integer
+          minimum: 1
+
+    LanguageCount:
+      type: object
+      required: [lang, page_count]
+      properties:
+        lang:
+          type: string
+        page_count:
+          type: integer
+          minimum: 1
+
+    DomainOverlapRow:
+      type: object
+      required: [from_domain, total_links, targets_linked]
+      properties:
+        from_domain:
+          type: string
+        total_links:
+          type: number
+          minimum: 0
+        targets_linked:
+          type: integer
+          minimum: 1
+
+    LinkIntersectRow:
+      type: object
+      required: [from_domain, total_links]
+      properties:
+        from_domain:
+          type: string
+        total_links:
+          type: number
+          minimum: 0
+
+    SimilarDomainRow:
+      type: object
+      required: [similar_domain, shared_linkers]
+      properties:
+        similar_domain:
+          type: string
+        shared_linkers:
+          type: integer
+          minimum: 1
+
+    CompetitorGapRow:
+      type: object
+      required: [from_domain, total_links, from_domain_score]
+      properties:
+        from_domain:
+          type: string
+        total_links:
+          type: number
+          minimum: 0
+        from_domain_score:
+          type: integer
+          minimum: 0
+          maximum: 100
+
+    LinkAuditQuality:
+      type: object
+      required: [high, medium, low, total]
+      properties:
+        high:
+          type: integer
+          minimum: 0
+        medium:
+          type: integer
+          minimum: 0
+        low:
+          type: integer
+          minimum: 0
+        total:
+          type: integer
+          minimum: 0
+
+    LinkAuditBacklink:
+      type: object
+      required: [from_domain, from_domain_score, anchor_type, link_quality]
+      properties:
+        from_domain:
+          type: string
+        from_domain_score:
+          type: integer
+          minimum: 0
+          maximum: 100
+        anchor_type:
+          type: string
+          enum: [branded, partial, naked, generic, image]
+        link_quality:
+          type: string
+          enum: [high, medium, low]
+
+    LinkAudit:
+      type: object
+      required:
+        - domain
+        - health_score
+        - risk_flags
+        - link_quality
+        - anchor_profile
+        - top_backlinks
+        - risk_backlinks
+        - outbound_summary
+        - credits_used
+        - credits_remaining
+      properties:
+        domain:
+          type: string
+        health_score:
+          type: integer
+          minimum: 0
+          maximum: 100
+        risk_flags:
+          type: array
+          items:
+            type: string
+            enum: [new_domain, high_authority_new_domain, no_tranco_presence, low_authority]
+        link_quality:
+          $ref: '#/components/schemas/LinkAuditQuality'
+        anchor_profile:
+          type: object
+          required: [branded, partial, generic, naked, image]
+          properties:
+            branded:
+              type: number
+              minimum: 0
+              maximum: 1
+            partial:
+              type: number
+              minimum: 0
+              maximum: 1
+            generic:
+              type: number
+              minimum: 0
+              maximum: 1
+            naked:
+              type: number
+              minimum: 0
+              maximum: 1
+            image:
+              type: number
+              minimum: 0
+              maximum: 1
+        top_backlinks:
+          type: array
+          items:
+            $ref: '#/components/schemas/LinkAuditBacklink'
+        risk_backlinks:
+          type: array
+          items:
+            $ref: '#/components/schemas/LinkAuditBacklink'
+        outbound_summary:
+          $ref: '#/components/schemas/OutboundSummary'
+        credits_used:
+          type: integer
+          minimum: 0
+        credits_remaining:
+          type: integer
+          minimum: 0
+        crawl_release:
+          type: string
+        cached:
+          type: boolean
+
+    SiteExplorer:
+      type: object
+      required: [backlinks, backlinks_total, authority, top_pages, anchor_text]
+      properties:
+        backlinks:
+          type: array
+          items:
+            $ref: '#/components/schemas/BacklinkRow'
+        backlinks_total:
+          type: integer
+          minimum: 0
+        authority:
+          $ref: '#/components/schemas/DomainAuthority'
+        top_pages:
+          type: array
+          items:
+            $ref: '#/components/schemas/TopPageRow'
+        anchor_text:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnchorTextRow'
+
+    BatchResultItem:
+      type: object
+      required: [domain, success]
+      properties:
+        domain:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/BacklinkRow'
+        total:
+          type: integer
+        success:
+          type: boolean
+        error:
+          type: string
+
+    StubData:
+      type: object
+      required: [status, reason]
+      properties:
+        status:
+          type: string
+          enum: ['not_yet_available']
+        reason:
+          type: string
+
+    LayerStatus:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+        latency_ms:
+          type: number
+        detail:
+          type: string
+        error:
+          type: string
+
+    HealthResponse:
+      type: object
+      required: [overall, timestamp, crawl_release, d1, r2, r2sql]
+      properties:
+        overall:
+          type: string
+          enum: ['healthy', 'degraded', 'down']
+        timestamp:
+          type: string
+        crawl_release:
+          type: string
+        d1:
+          $ref: '#/components/schemas/LayerStatus'
+        r2:
+          $ref: '#/components/schemas/LayerStatus'
+        r2sql:
+          $ref: '#/components/schemas/LayerStatus'
+
+  responses:
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Missing or invalid API key
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    PaymentRequired:
+      description: Insufficient credits
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    RateLimited:
+      description: Rate limit exceeded (60 requests/minute)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+paths:
+  /ping:
+    get:
+      operationId: getPing
+      summary: Ping
+      description: Fast liveness check. Returns immediately with no database queries. No authentication required.
+      security: []
+      tags: [System]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok]
+                properties:
+                  ok:
+                    type: boolean
+
+  /health:
+    get:
+      operationId: getHealth
+      summary: Health check
+      description: Returns the health status of all subsystems (D1, R2, R2 SQL). No authentication required.
+      security: []
+      tags: [System]
+      responses:
+        '200':
+          description: All systems healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '207':
+          description: Degraded — some subsystems unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Down — critical subsystems unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /v1/credits:
+    get:
+      operationId: getCredits
+      summary: Check credit balance
+      description: Returns the current credit balance for the authenticated user. Does not deduct credits.
+      tags: [Account]
+      responses:
+        '200':
+          description: Current credit balance
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [credits]
+                properties:
+                  credits:
+                    type: integer
+                    minimum: 0
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /v1/backlinks:
+    get:
+      operationId: getBacklinks
+      summary: Get backlinks for a domain
+      description: >
+        Returns backlinks for the specified domain.
+        Default `sort=importance` returns aggregated referrer rows.
+        `sort=recent` returns URL-level backlink rows ordered by crawl recency.
+        Costs 2 credits (or 3 credits with `score=true`).
+      tags: [Link Graph]
+      parameters:
+        - $ref: '#/components/parameters/domain'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/score'
+        - $ref: '#/components/parameters/backlinksSort'
+        - $ref: '#/components/parameters/backlinksFromDomain'
+        - $ref: '#/components/parameters/backlinksLinkType'
+      responses:
+        '200':
+          description: Backlinks for the domain
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EnvelopeFields'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/BacklinkRow'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v1/referring-domains:
+    get:
+      operationId: getReferringDomains
+      summary: Get referring domains
+      description: Returns domains that link to the specified domain with link counts. Costs 2 credits (or 3 credits with score=true).
+      tags: [Link Graph]
+      parameters:
+        - $ref: '#/components/parameters/domain'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/score'
+      responses:
+        '200':
+          description: Referring domains
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EnvelopeFields'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ReferringDomainRow'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v1/outbound-links:
+    get:
+      operationId: getOutboundLinks
+      summary: Get outbound links from a domain
+      description: Returns links going out from the specified domain. Costs 2 credits.
+      tags: [Link Graph]
+      parameters:
+        - $ref: '#/components/parameters/domain'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Outbound links
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EnvelopeFields'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/OutboundLinkRow'
+                      summary:
+                        $ref: '#/components/schemas/OutboundSummary'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v1/anchor-text:
+    get:
+      operationId: getAnchorText
+      summary: Get anchor text distribution
+      description: Returns anchor text phrases used in links pointing to the domain. Costs 2 credits.
+      tags: [Link Graph]
+      parameters:
+        - $ref: '#/components/parameters/domain'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Anchor text distribution
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EnvelopeFields'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/AnchorTextRow'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v1/top-pages:
+    get:
+      operationId: getTopPages
+      summary: Get top pages by inbound links
+      description: Returns pages on the domain ranked by number of inbound links. Costs 2 credits.
+      tags: [Link Graph]
+      parameters:
+        - $ref: '#/components/parameters/domain'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Top pages
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EnvelopeFields'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/TopPageRow'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v1/url-index:
+    get:
+      operationId: getUrlIndex
+      summary: Get URL index (CDX)
+      description: >
+        Returns crawled URLs for a domain with status codes and MIME types. Costs 2 credits.
+        Note: upstream R2 SQL pagination currently does not support true OFFSET behavior for this query.
+      tags: [URL Index]
+      parameters:
+        - $ref: '#/components/parameters/domain'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+      responses:
+        '200':
+          description: URL index entries
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EnvelopeFields'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/UrlIndexRow'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v1/domain-authority:
+    get:
+      operationId: getDomainAuthority
+      summary: Get domain authority score
+      description: Returns a 0-100 authority score based on referring domains. Costs 1 credit.
+      tags: [Domain Metrics]
+      parameters:
+        - $ref: '#/components/parameters/domain'
+      responses:
+        '200':
+          description: Domain authority data
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EnvelopeFields'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DomainAuthority'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v1/domain-rank:
+    get:
+      operationId: getDomainRank
+      summary: Get domain rank metrics
+      description: Returns inbound edge count, unique linking domains, and average host count. Costs 2 credits.
+      tags: [Domain Metrics]
+      parameters:
+        - $ref: '#/components/parameters/domain'
+      responses:
+        '200':
+          description: Domain rank data
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EnvelopeFields'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DomainRank'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v1/crawl-history:
+    get:
+      operationId: getCrawlHistory
+      summary: Get crawl history for a domain
+      description: Returns first/last seen dates and total URL count from the crawl index. Costs 2 credits.
+      tags: [URL Index]
+      parameters:
+        - $ref: '#/components/parameters/domain'
+      responses:
+        '200':
+          description: Crawl history
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EnvelopeFields'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/CrawlHistory'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v1/page-meta:
+    get:
+      operationId: getPageMeta
+      summary: Get page metadata
+      description: >
+        Returns title, description, h1, and canonical URL for a specific page.
+        Returns null data (not 404) when the URL is not found. Costs 2 credits.
+      tags: [Page Metadata]
+      parameters:
+        - name: url
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The full URL to look up (e.g. "https://example.com/page")
+      responses:
+        '200':
+          description: Page metadata (data may be null if URL not found)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EnvelopeFields'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/PageMeta'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v1/tech-stack:
+    get:
+      operationId: getTechStack
+      summary: Get detected tech stack
+      description: Returns server, X-Powered-By, and generator meta tag for a domain. Costs 2 credits.
+      tags: [Page Metadata]
+      parameters:
+        - $ref: '#/components/parameters/domain'
+      responses:
+        '200':
+          description: Tech stack data
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EnvelopeFields'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/TechStack'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v1/status-codes:
+    get:
+      operationId: getStatusCodes
+      summary: Get HTTP status code distribution
+      description: Returns a count of URLs by HTTP status code for the domain. Costs 2 credits.
+      tags: [URL Index]
+      parameters:
+        - $ref: '#/components/parameters/domain'
+      responses:
+        '200':
+          description: Status code counts
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EnvelopeFields'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/StatusCodeCount'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v1/content-types:
+    get:
+      operationId: getContentTypes
+      summary: Get content type distribution
+      description: Returns a count of URLs by MIME type for the domain. Costs 2 credits.
+      tags: [URL Index]
+      parameters:
+        - $ref: '#/components/parameters/domain'
+      responses:
+        '200':
+          description: Content type counts
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EnvelopeFields'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ContentTypeCount'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v1/language:
+    get:
+      operationId: getLanguage
+      summary: Get language distribution
+      description: Returns page count by detected language for the domain (max 5 results). Costs 2 credits.
+      tags: [Page Metadata]
+      parameters:
+        - $ref: '#/components/parameters/domain'
+      responses:
+        '200':
+          description: Language distribution
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EnvelopeFields'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        maxItems: 5
+                        items:
+                          $ref: '#/components/schemas/LanguageCount'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v1/domain-overlap:
+    get:
+      operationId: getDomainOverlap
+      summary: Find domains linking to multiple targets
+      description: >
+        Returns domains that link to two or more of the specified target domains.
+        Requires at least 2 domains and allows up to 5. Costs 5 credits.
+      tags: [Cross-Domain]
+      parameters:
+        - $ref: '#/components/parameters/domainsCsv'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Overlapping domains
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EnvelopeFields'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/DomainOverlapRow'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v1/link-intersect:
+    get:
+      operationId: getLinkIntersect
+      summary: Find domains linking to both targets
+      description: Returns domains that link to both domain_a and domain_b. Costs 5 credits.
+      tags: [Cross-Domain]
+      parameters:
+        - name: domain_a
+          in: query
+          required: true
+          schema:
+            type: string
+          description: First domain to compare
+        - name: domain_b
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Second domain to compare
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Intersecting linker domains
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EnvelopeFields'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/LinkIntersectRow'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v1/competitor-gap:
+    get:
+      operationId: getCompetitorGap
+      summary: Find competitor link gaps
+      description: >
+        Returns domains that link to the competitor (vs) but not to the target domain.
+        Costs 5 credits.
+      tags: [Cross-Domain]
+      parameters:
+        - $ref: '#/components/parameters/domain'
+        - name: vs
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Competitor domain to compare against
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 200
+          description: Maximum results to return (default 50, max 200)
+      responses:
+        '200':
+          description: Competitor gap domains
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [domain, vs, data, total, returned, credits_used, credits_remaining]
+                properties:
+                  domain:
+                    type: string
+                  vs:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CompetitorGapRow'
+                  total:
+                    type: integer
+                    minimum: 0
+                  returned:
+                    type: integer
+                    minimum: 0
+                  credits_used:
+                    type: integer
+                    minimum: 0
+                  credits_remaining:
+                    type: integer
+                    minimum: 0
+                  crawl_release:
+                    type: string
+                  cached:
+                    type: boolean
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v1/link-audit:
+    get:
+      operationId: getLinkAudit
+      summary: Run link profile audit
+      description: >
+        Returns composite backlink quality, anchor profile, risk flags, and outbound concentration signals.
+        Costs 8 credits.
+      tags: [Power Endpoints]
+      parameters:
+        - $ref: '#/components/parameters/domain'
+      responses:
+        '200':
+          description: Link audit report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinkAudit'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v1/similar-domains:
+    get:
+      operationId: getSimilarDomains
+      summary: Find similar domains
+      description: >
+        Returns domains that share linking domains with the target.
+        Limit is capped at 100 (not 1000). Costs 5 credits.
+      tags: [Cross-Domain]
+      parameters:
+        - $ref: '#/components/parameters/domain'
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 100
+            minimum: 1
+            maximum: 100
+          description: Maximum results (default 100, max 100)
+      responses:
+        '200':
+          description: Similar domains
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EnvelopeFields'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/SimilarDomainRow'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v1/site-explorer:
+    get:
+      operationId: getSiteExplorer
+      summary: Full site overview
+      description: >
+        Returns backlinks, authority score, top pages, and anchor text in a single request.
+        Costs 10 credits.
+      tags: [Power Endpoints]
+      parameters:
+        - $ref: '#/components/parameters/domain'
+      responses:
+        '200':
+          description: Site explorer data
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EnvelopeFields'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SiteExplorer'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v1/batch:
+    post:
+      operationId: postBatch
+      summary: Batch backlink lookup
+      description: >
+        Looks up backlinks for up to 50 domains in a single request.
+        Costs 2 credits per successfully queried domain (charged after queries complete).
+      tags: [Power Endpoints]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [domains]
+              properties:
+                domains:
+                  type: array
+                  items:
+                    type: string
+                  minItems: 1
+                  maxItems: 50
+                  description: Domains to look up backlinks for
+      responses:
+        '200':
+          description: Batch results
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EnvelopeFields'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/BatchResultItem'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v1/link-velocity:
+    get:
+      operationId: getLinkVelocity
+      summary: Link velocity (stub)
+      description: >
+        Not yet available in v1. Requires two crawl releases to compute.
+        Returns immediately with status "not_yet_available". Costs 0 credits.
+      tags: [Stubs]
+      parameters:
+        - name: domain
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Domain (optional for stub endpoints)
+      responses:
+        '200':
+          description: Stub response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EnvelopeFields'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/StubData'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v1/new-links:
+    get:
+      operationId: getNewLinks
+      summary: New links (stub)
+      description: >
+        Not yet available in v1. Requires two crawl releases to compute.
+        Returns immediately with status "not_yet_available". Costs 0 credits.
+      tags: [Stubs]
+      parameters:
+        - name: domain
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Domain (optional for stub endpoints)
+      responses:
+        '200':
+          description: Stub response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EnvelopeFields'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/StubData'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v1/lost-links:
+    get:
+      operationId: getLostLinks
+      summary: Lost links (stub)
+      description: >
+        Not yet available in v1. Requires two crawl releases to compute.
+        Returns immediately with status "not_yet_available". Costs 0 credits.
+      tags: [Stubs]
+      parameters:
+        - name: domain
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Domain (optional for stub endpoints)
+      responses:
+        '200':
+          description: Stub response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EnvelopeFields'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/StubData'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v1/schema-markup:
+    get:
+      operationId: getSchemaMarkup
+      summary: Schema markup (stub)
+      description: >
+        Not yet available in v1. Returns immediately with status "not_yet_available". Costs 0 credits.
+      tags: [Stubs]
+      parameters:
+        - name: url
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The URL to check for schema markup
+      responses:
+        '200':
+          description: Stub response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EnvelopeFields'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/StubData'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v1/internal-links:
+    get:
+      operationId: getInternalLinks
+      summary: Internal links (stub)
+      description: >
+        Not yet available in v1. Returns immediately with status "not_yet_available". Costs 0 credits.
+      tags: [Stubs]
+      parameters:
+        - $ref: '#/components/parameters/domain'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+      responses:
+        '200':
+          description: Stub response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EnvelopeFields'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/StubData'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
