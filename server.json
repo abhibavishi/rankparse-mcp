@@ -1,0 +1,10 @@
+{
+  "name": "io.github.abhibavishi/rankparse-mcp",
+  "description": "SEO data MCP server — backlinks, domain authority, tech stack, and 18+ tools powered by Common Crawl.",
+  "repository": {
+    "url": "https://github.com/abhibavishi/rankparse-mcp"
+  },
+  "version_detail": {
+    "version": "1.0.0"
+  }
+}
