@@ -3,9 +3,23 @@ info:
   title: RankParse API
   version: 1.0.0
   description: >
-    SEO data API for developers and AI agents. Backlinks, domain authority, tech stack,
-    real-time page audits, and 20+ signals — all powered by Common Crawl. Billed per call,
-    no subscription, no monthly floor. Starting at $0.009/credit. Credits never expire.
+    SEO data API for developers and AI agents, powered by pre-processed Common Crawl data
+    served on Cloudflare's edge.
+
+
+    **20 data endpoints across 5 categories:**
+
+    - **Link graph** — backlinks, referring domains, outbound links, anchor text, top pages
+    - **Domain metrics** — authority score (0-100), domain rank, crawl history
+    - **Real-time page analysis** — full SEO audit, site health, sitemap discovery, tech stack, Core Web Vitals
+    - **Cross-domain intelligence** — domain overlap, link intersect, competitor gap, similar domains
+    - **Power endpoints** — link audit, site explorer, batch backlinks (up to 50 domains)
+
+
+    Billed per call — no subscription, no monthly floor. Starting at $0.009/credit. Credits never expire.
+
+
+    REST API and MCP server available. Base URL: `https://api.rankparse.com`
   contact:
     name: RankParse Support
     url: https://rankparse.com
