@@ -1,6 +1,6 @@
 # RankParse API
 
-SEO data API for developers and AI agents, powered by pre-processed [Common Crawl](https://commoncrawl.org/) data. 20 endpoints covering backlink graphs, domain authority, real-time page audits, and cross-domain intelligence — billed per call, no subscription, no monthly minimum.
+SEO data API for developers and AI agents, powered by pre-processed [Common Crawl](https://commoncrawl.org/) data updated quarterly. 20 endpoints covering backlink graphs, domain authority, real-time page audits, and cross-domain intelligence — billed per call, no subscription, no monthly minimum.
 
 - **Docs:** https://rankparse.com/docs
 - **Dashboard:** https://rankparse.com/dashboard
