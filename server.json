@@ -1,10 +1,30 @@
 {
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.abhibavishi/rankparse-mcp",
-  "description": "SEO data MCP server — backlinks, domain authority, tech stack, and 18+ tools powered by Common Crawl.",
+  "description": "SEO data for AI agents \u2014 backlinks, DA, tech stack, and 18+ tools via Common Crawl.",
+  "version": "1.0.0",
   "repository": {
-    "url": "https://github.com/abhibavishi/rankparse-mcp"
+    "url": "https://github.com/Rankparse/rankparse-mcp",
+    "source": "github"
   },
-  "version_detail": {
-    "version": "1.0.0"
-  }
+  "packages": [
+    {
+      "registryType": "http",
+      "identifier": "https://mcp.rankparse.com/mcp",
+      "url": "https://mcp.rankparse.com/mcp",
+      "transport": {
+        "type": "streamable-http",
+        "url": "https://mcp.rankparse.com/mcp"
+      },
+      "environmentVariables": [
+        {
+          "name": "RANKPARSE_API_KEY",
+          "description": "RankParse API key — get one at rankparse.com/dashboard",
+          "isRequired": true,
+          "format": "string",
+          "isSecret": true
+        }
+      ]
+    }
+  ]
 }
